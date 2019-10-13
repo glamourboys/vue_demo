@@ -7,7 +7,7 @@
           :key="item.name"
           class="item-list"
           :class="{'current':currentIndex === $index}"
-          @click="currentMenu($index,$event)"
+          @click.stop.prevent="selectMenu($index,$event)"
         >
           <span class="text border-1px">
             <span v-show="item.type > 0" class="icon" :class="classMap[item.type]"></span>
@@ -21,7 +21,12 @@
         <li v-for="item in goods" :key="item.name" class="item-list item-list-hook">
           <h1 class="title border-1px">{{item.name}}</h1>
           <ul>
-            <li v-for="food in item.foods" :key="food.name" class="food-item border-1px">
+            <li
+              v-for="food in item.foods"
+              :key="food.name"
+              class="food-item border-1px"
+              @click.stop.prevent="selectFood(food,$event)"
+            >
               <div class="icon">
                 <img :src="food.icon" alt width="57" />
               </div>
@@ -57,13 +62,14 @@
       :select-foods="selectFoods"
       v-ref:shopcart
     ></shopCart>
+    <foods :food="selectedFood" v-ref:food></foods>
   </div>
 </template>
 <script>
 import BScroll from "better-scroll";
 import shopcart from "components/shopCart/shopCart";
 import cartcontrol from "components/cartControl/cartControl";
-
+import foods from "components/foods/foods";
 const ERR_OK = 0; // 状态码
 
 export default {
@@ -74,13 +80,15 @@ export default {
   },
   components: {
     shopcart,
-    cartcontrol
+    cartcontrol,
+    foods
   },
   data() {
     return {
       goods: [],
       itemHeight: [],
-      scrollY: 0
+      scrollY: 0,
+      selectedFood: {}
     };
   },
   computed: {
@@ -128,7 +136,16 @@ export default {
   },
   methods: {
     // 常用函数
-    currentMenu(index, event) {
+    selectFood(food, event) {
+      // 商品详情页
+      if (!event._constructed) {
+        return;
+      }
+      this.selectedFood = food;
+      this.$refs.food.show(); // 调用子组件方法
+      console.log("selectedFood", this.selectedFood);
+    },
+    selectMenu(index, event) {
       // 点击menu事件
       // scrollToElement(el, time, offsetX, offsetY, easing)
       if (!event._constructed) {
@@ -212,7 +229,7 @@ export default {
 
       &.current {
         position: relative;
-        z-index: 10;
+        z-index: 6;
         margin: 0;
         padding: 0 12px;
         margin-top: -1px;

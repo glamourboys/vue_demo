@@ -6,13 +6,14 @@
         <a v-link="{path:item.path}">{{item.name}}</a>
       </div>
     </div>
-    <router-view :seller="seller"></router-view>
-    <!-- <div class="footer">京公网安备 666666666666号&nbsp;|&nbsp;京ICP证190819号</div> -->
+    <router-view :seller="seller" keep-alive></router-view>
+    <!-- <keep-alive>是Vue的内置组件，能在组件切换过程中将状态保留在内存中，防止重复渲染DOM。 -->
   </div>
 </template>
 
 <script>
 import myHeader from "components/header/header";
+import { urlParse } from "common/util/util";
 const ERR_OK = 0;
 export default {
   components: {
@@ -22,17 +23,24 @@ export default {
     return {
       tabs: [
         { name: "商品", path: "/goods", index: 0 },
-        { name: "评论", path: "/seller", index: 1 },
-        { name: "商家", path: "/ratings", index: 2 }
+        { name: "评论", path: "/ratings", index: 1 },
+        { name: "商家", path: "/seller", index: 2 }
       ],
-      seller: {}
+      seller: {
+        id: (() => {
+          /* 立即执行函数来获取id值 */
+          let queryParam = urlParse();
+          return queryParam.id;
+        })()
+      }
     };
   },
   created() {
-    this.$http.get("/api/seller").then(res => {
+    this.$http.get("/api/seller?" + this.seller.id).then(res => {
       res = res.body; // 拿到对象
       if (res.errno === ERR_OK) {
-        this.seller = res.data;
+        this.seller = Object.assign({}, this.seller, res.data); // 这里写这个目的是为了不覆盖掉id
+        console.log(this.seller, urlParse());
       }
     });
   }
@@ -47,7 +55,7 @@ export default {
 
   .tab {
     position: relative;
-    z-index: 3;
+    z-index: 2;
     display: flex;
     width: 100%;
     height: 40px;

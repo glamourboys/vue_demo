@@ -39,12 +39,19 @@ For detailed explanation on how things work, checkout the [guide](http://vuejs-t
  ## --------->>>base.styl:通用基础样式
  ## --------->>>icon.styl:字体样式
  ## --------->>>mixin.styl:1px边框样式
+ ## --------->>>util: 工具类js
  ---
  ## >>> components: 组件文件夹
  ### ---->>>goods:商品列表页
- ### ---->>>seller:评论页    
- ### ---->>>ratings:商家页    
- ### ---->>>header:头部组件    
+ ### ---->>>seller:评论页
+ ### ---->>>ratings:商家页
+ ### ---->>>header:头部组件
+ ### ---->>>star:星级组件
+ ### ---->>>cartControl:商品增删部件
+ ### ---->>>foods:单个商品详情页
+ ### ---->>>ratingSelect:评价tab切换部件
+ ### ---->>>shopCart:购物车底部部件
+ ### ---->>>split:空白盒子部件
 
 ---
 ---

@@ -1,30 +1,70 @@
 
 <template>
-  <div class="shopCart">
-    <div class="content" :class="{'hightBgColor' : totalPrice > 0}">
-      <div class="shop-left">
-        <div class="logo-wrapper inline">
-          <div class="logo" :class="{'hightBgColor' : totalPrice > 0}">
-            <span class="count" v-show="totalCount > 0">{{totalCount}}</span>
-            <span class="icon-shopping_cart"></span>
+  <div>
+    <div class="shopCart">
+      <div class="content" :class="{'hightBgColor' : totalPrice > 0}" @click="toggleShow($event)">
+        <div class="shop-left">
+          <div class="logo-wrapper inline">
+            <div class="logo" :class="{'hightBgColor' : totalPrice > 0}">
+              <span class="count" v-show="totalCount > 0">{{totalCount}}</span>
+              <span class="icon-shopping_cart"></span>
+            </div>
           </div>
+          <div class="price inline" :class="{'hightBgColor' : totalPrice > 0}">￥{{totalPrice}}</div>
+          <div class="require inline">另需配送费￥{{deliveryPrice}}元</div>
         </div>
-        <div class="price inline" :class="{'hightBgColor' : totalPrice > 0}">￥{{totalPrice}}</div>
-        <div class="require inline">另需配送费￥{{deliveryPrice}}元</div>
+        <div class="shop-right" :class="changePay" @click.stop.prevent="payNow">
+          <div class="payPrice">{{DiffPrice}}</div>
+        </div>
       </div>
-      <div class="shop-right" :class="changePay">
-        <div class="payPrice">{{DiffPrice}}</div>
+      <div class="ball-container">
+        <div
+          v-for="ball in balls"
+          :key="ball.show"
+          v-show="ball.show"
+          class="ball"
+          transition="drop"
+        >
+          <div class="inner inner-hook"></div>
+        </div>
+      </div>
+      <div class="shop-list" v-show="foodList" transition="fade">
+        <div class="list-header border-1px">
+          <h1 class="title">购物车</h1>
+          <div class="clear" @click="clearFood">清空</div>
+        </div>
+        <div class="list-content" v-el:cart-list>
+          <ul>
+            <li
+              v-for="food in selectFoods"
+              :key="food.price"
+              class="foodList border-1px"
+              transition="foodFade"
+            >
+              <span class="name">{{food.name}}</span>
+              <div class="list-right">
+                <div class="price">
+                  ￥
+                  <span class="text">{{food.price}}</span>
+                </div>
+                <div class="cartControl">
+                  <cartcontrol :food="food"></cartcontrol>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
-    <div class="ball-container">
-      <div v-for="ball in balls" v-show="ball.show" class="ball" transition="drop">
-        <div class="inner inner-hook"></div>
-      </div>
-    </div>
+    <div class="mask" v-show="foodList" transition="fade"></div>
   </div>
 </template>
 
 <script>
+/* eslint-disable */
+import BScroll from "better-scroll";
+import cartcontrol from "components/cartControl/cartControl";
+
 export default {
   props: {
     selectFoods: {
@@ -37,11 +77,13 @@ export default {
       type: Number,
       default: 0
     },
-
     minPrice: {
       type: Number,
       default: 0
     }
+  },
+  components: {
+    cartcontrol
   },
   data() {
     return {
@@ -52,7 +94,8 @@ export default {
         { show: false },
         { show: false }
       ],
-      dropBalls: []
+      dropBalls: [],
+      fold: true
     };
   },
   computed: {
@@ -74,7 +117,7 @@ export default {
           total += food.count;
         });
       }
-      return `${total}`;
+      return total;
     },
     DiffPrice() {
       // 起送价变化
@@ -95,12 +138,38 @@ export default {
       } else {
         return "";
       }
+    },
+    foodList() {
+      if (!this.totalPrice) {
+        this.fold = true;
+        return false;
+      }
+      let show = !this.fold;
+      if (!this.cartScroll) {
+        this.cartScroll = new BScroll(this.$els.cartList, {
+          click: true,
+          probeType: 3
+        });
+      } else {
+        this.cartScroll.refresh();
+      }
+      return show;
     }
   },
+  created() {},
   methods: {
+    payNow() {
+      if (this.totalPrice < this.minPrice) return false;
+      window.alert(`结算${this.totalPrice}元`);
+    },
+    clearFood() {
+      // 清空购物车
+      this.selectFoods.forEach(food => {
+        food.count = 0;
+      });
+    },
     drop(el) {
       // four
-      console.log("shopcart", el);
       for (let i = 0; i < this.balls.length; i++) {
         let ball = this.balls[i];
         if (!ball.show) {
@@ -110,53 +179,58 @@ export default {
           return;
         }
       }
+    },
+    toggleShow(el) {
+      if (!this.totalCount) {
+        // 这里的totalCount 在上面输出时要确保是数字，否则这里判断时字符串，判断无效
+        return false;
+      } else {
+        this.fold = !this.fold;
+      }
     }
   },
   transitions: {
-    // beforeEnter 就去了，但是样式设置不上去，后两个时间没进去
+    // beforeEnter 进去了，但是样式设置不上去，后两个时间没进去
     drop: {
       // 暂时不理解！！！
       beforeEnter(el) {
         let count = this.balls.length;
         while (count--) {
           let ball = this.balls[count];
-          console.log(ball);
           if (ball.show) {
             let rect = ball.el.getBoundingClientRect(); // 加号位置
             let x = rect.left - 32; // 两点之间的水平距离
             let y = -(window.innerHeight - rect.top - 22); // 两点之间竖直距离
             console.table({
-              'x': x,
-              'y': y,
-              'top': rect.top,
-              'left': rect.left,
-              'inner': window.innerHeight
+              x: x,
+              y: y,
+              top: rect.top,
+              left: rect.left,
+              inner: window.innerHeight
             });
             el.style.display = ""; // 让小球显现
-            el.style.webkitTransform = `transform3d(0,${y}px,0)`;
-            el.style.transform = `transform3d(0,${y}px,0)`;
+            el.style.webkitTransform = `translate3d(0,${y}px,0)`;
+            el.style.transform = `translate3d(0,${y}px,0)`;
             let inner = el.getElementsByClassName("inner-hook")[0];
-            inner.style.webkitTransform = `transform3d(${x}px,0,0)`;
-            inner.style.transform = `transform3d(${x}px,0,0)`;
-            console.log(el.style, inner.style);
+            inner.style.webkitTransform = `translate3d(${x}px,0,0)`;
+            inner.style.transform = `translate3d(${x}px,0,0)`;
           }
         }
       },
       enter(el) {
         /*eslint-disable no-unused-vars*/
-        let rf = el.offsetHeight;
+        let rf = el.offsetHeight; // 这一行代码目的: 强制让浏览器重新渲染使得小球动画得以实现
         this.$nextTick(() => {
           let inner = el.getElementsByClassName("inner-hook")[0];
           el.style.display = ""; // 让小球显现
-          el.style.webkitTransform = "transform3d(0,0,0)";
-          el.style.transform = "transform3d(0,0,0)";
-          inner.style.webkitTransform = "transform3d(0,0,0)";
-          inner.style.transform = "transform3d(0,0,0)";
+          el.style.webkitTransform = "translate3d(0,0,0)";
+          el.style.transform = "translate3d(0,0,0)";
+          inner.style.webkitTransform = "translate3d(0,0,0)";
+          inner.style.transform = "translate3d(0,0,0)";
         });
       },
       afterEnter(el) {
-        let ball = this.dropBalls.shift();
-        console.log("ball", ball);
+        let ball = this.dropBalls.shift(); // 将改变的那个小球删除！重新计算
         if (ball) {
           ball.show = false;
           el.style.display = "none";
@@ -167,9 +241,11 @@ export default {
 };
 </script>
 <style lang="stylus">
+@import '../../common/stylus/mixin';
+
 .shopCart {
   position: fixed;
-  z-index: 10;
+  z-index: 999;
   bottom: 0;
   left: 0;
   right: 0;
@@ -300,7 +376,7 @@ export default {
       z-index: 200;
 
       &.drop-transition {
-        transition: all 0.3s cubic-bezier(0.62, -0.52, 0.83, 0.67);
+        transition: all 0.3s cubic-bezier(0.38, -0.41, 0.7, 0.14);
       }
 
       .inner {
@@ -311,6 +387,116 @@ export default {
         transition: all 0.3s linear;
       }
     }
+  }
+
+  .shop-list {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+
+    &.fade-transition {
+      transform: translate3d(0, -100%, 0); /* -100% 是 将top:0 的高度列出来 */
+      transition: all 0.4s;
+
+      &.fade-enter, &.fade-leave {
+        transform: translate3d(0, 0, 0);
+      }
+
+      .list-header {
+        height: 40px;
+        line-height: 40px;
+        padding: 0 18px;
+        background-color: #f3f3f3;
+        border-1px(rgba(7, 17, 27, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .title {
+          font-size: 14px;
+          color: rgb(7, 17, 27);
+        }
+
+        .clear {
+          font-size: 12px;
+          color: rgb(0, 160, 220);
+        }
+      }
+
+      .list-content {
+        max-height: 230px;
+        overflow: hidden;
+        padding: 0 18px;
+        background-color: #fff;
+
+        .foodList {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 48px;
+          padding: 12px 0;
+          box-sizing: border-box;
+          border-1px(rgba(7, 17, 27, 0.1));
+
+          &.foodFade-transition {
+            transform: translate3d(0, 0, 0);
+            transition: all 0.3s;
+            opacity: 1;
+          }
+
+          &.foodFade-enter, &.foodFade-leave {
+            transform: translate3d(-100%, 0, 0);
+            opacity: 0;
+          }
+
+          .name {
+            line-height: 24px;
+            font-size: 14px;
+            color: rgb(7, 17, 27);
+          }
+
+          .list-right {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            .price {
+              padding: 0 12px 0 18px;
+              font-size: 10px;
+              color: rgb(240, 20, 20);
+
+              .text {
+                font-size: 14px;
+                font-weight: 700;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 990;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+
+  &.fade-transition {
+    background-color: rgba(7, 17, 27, 0.6);
+    opacity: 1;
+  }
+
+  &.fade-enter, &.fade-leave {
+    background-color: rgba(7, 17, 27, 0);
+    opacity: 0;
   }
 }
 </style>

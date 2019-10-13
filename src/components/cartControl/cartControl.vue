@@ -1,10 +1,10 @@
 <template>
   <div class="cartControl">
-    <div class="decrease" v-show="food.count > 0" @click="delCount($event)" transition="move">
+    <div class="decrease" v-show="food.count > 0" @click.stop.prevent="delCount($event)" transition="move">
       <span class="inner icon-remove_circle_outline"></span>
     </div>
     <div class="countNumber" v-show="food.count > 0">{{food.count}}</div>
-    <div class="increase" @click="addCount($event)">
+    <div class="increase" @click.stop.prevent="addCount($event)">
       <span class="inner icon-add_circle"></span>
     </div>
   </div>
@@ -97,9 +97,10 @@ export default {
   .countNumber {
     display: inline-block;
     vertical-align: top;
-    padding-top: 6px;
+    padding-top: 12px;
     width: 12px;
     font-size: 12px;
+    line-height: 12px;
     text-align: center;
     color: rgb(147, 153, 159);
   }

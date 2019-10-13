@@ -2,9 +2,9 @@ import Vue from 'vue';
 import App from './App';
 import VueRouter from 'vue-router';
 import VueResource from 'vue-resource';
+
 Vue.use(VueRouter);
 Vue.use(VueResource);
-
 import goods from 'components/goods/goods';
 import seller from 'components/seller/seller';
 import ratings from 'components/ratings/ratings';
@@ -21,13 +21,13 @@ router.map({
   '/goods': {
     component: goods
   },
-  '/seller': {
-    component: seller
-  },
   '/ratings': {
     component: ratings
+  },
+  '/seller': {
+    component: seller
   }
 });
 // 挂载点
 router.start(app, '#app');
-router.go('/goods');  // 初始页面路由：goods
+router.go('/goods'); // 初始页面路由：goods

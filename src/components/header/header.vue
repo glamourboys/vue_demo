@@ -82,6 +82,7 @@ export default {
     };
   },
   created() {
+    console.log(this.seller);
     /* 这个周期函数 可以请求数据;这里处理不同类型的文字对应的图片名 */
     this.classMap = ["decrease", "discount", "special", "invoice", "guarantee"];
   },
@@ -276,10 +277,11 @@ export default {
   .model-detail {
     position: fixed;
     left: 0;
-    right: 0;
     top: 0;
     bottom: 0;
-    z-index: 99;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
     overflow: auto;
     transition: all 0.5s;
 
