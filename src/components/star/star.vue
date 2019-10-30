@@ -1,90 +1,91 @@
 <template>
   <div class="star" :class="starType">
-    <span
-      v-for="itemClass in itemClasses"
-      :class="itemClass"
-      class="star-item"
-      :key="itemClass"
-      track-by="$index"
-    ></span>
+    <span v-for="(itemClass,index) in itemAll" :key="index" class="star-item" :class="itemClass"></span>
   </div>
 </template>
+
 <script>
-const LENGTH = 5;
 const CLS_ON = "on";
-const CLS_OFF = "off";
 const CLS_HALF = "half";
+const CLS_OFF = "off";
+const Length = 5;
 export default {
   props: {
     size: {
-      type: Number
+      type: Number,
+      default: 0
     },
     score: {
-      type: Number
+      type: Number,
+      default: 0
     }
+  },
+  data() {
+    return {
+      value: ""
+    };
   },
   computed: {
     starType() {
       return "star-" + this.size;
     },
-    itemClasses() {
+    itemAll() {
       let result = [];
-      /* 此处处理后 均为 正数 或 半数 */
-      let score = Math.floor(this.score * 2) / 2;
-      let hasDecimal = score % 1 !== 0; // 判断是否有小数
-      let integer = Math.floor(score); // 整数部分数字
+      const score = Math.floor(this.score * 2) / 2; // 这里算出来的是要不是正数，要不就是半数；
+      const hasDecimal = score % 1 !== 0; // 这里是判断是否有小数！
+      const integer = Math.floor(score); // 取出其正数部分！
       for (let i = 0; i < integer; i++) {
-        // push 进 正数星星
-        result.push(CLS_ON);
+        result.push(CLS_ON); // return 不能return 否则后面会出问题
       }
-
       if (hasDecimal) {
-        // 有小数则push半星
+        // 若存在小数
         result.push(CLS_HALF);
       }
 
-      while (result.length < LENGTH) {
-        //  判断未到5星,push空白星
+      while (result.length < Length) {
         result.push(CLS_OFF);
       }
+      console.log(result);
       return result;
     }
-  }
+  },
+  methods: {}
 };
 </script>
 
 <style lang="stylus">
-@import '../../common/stylus/mixin';
+@import '~common/stylus/mixin.styl';
 
 .star {
-  font-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   .star-item {
-    display: inline-block;
     background-repeat: no-repeat;
   }
 
-  &.star-24 {
+  &.star-48 {
     .star-item {
-      width: 10px;
-      height: 10px;
-      margin-right: 3px;
-      background-size: 10px 10px;
+      width: 20px;
+      height: 20px;
+      margin-right: 22px;
+      background-size: 20px 20px;
 
-      &.last-child {
+      &:last-child {
         margin-right: 0;
       }
 
       &.on {
-        bg-image('./img/star24_on');
-      }
-
-      &.off {
-        bg-image('./img/star24_off');
+        bg-image('images/star48_on');
       }
 
       &.half {
-        bg-image('./img/star24_half');
+        bg-image('images/star48_half');
+      }
+
+      &.off {
+        bg-image('images/star48_off');
       }
     }
   }
@@ -96,45 +97,45 @@ export default {
       margin-right: 6px;
       background-size: 15px 15px;
 
-      &.last-child {
+      &:last-child {
         margin-right: 0;
       }
 
       &.on {
-        bg-image('./img/star36_on');
-      }
-
-      &.off {
-        bg-image('./img/star36_off');
+        bg-image('images/star36_on');
       }
 
       &.half {
-        bg-image('./img/star36_half');
+        bg-image('images/star36_half');
+      }
+
+      &.off {
+        bg-image('images/star36_off');
       }
     }
   }
 
-  &.star-48 {
+  &.star-24 {
     .star-item {
-      width: 20px;
-      height: 20px;
-      margin-right: 22px;
-      background-size: 20px 20px;
+      width: 10px;
+      height: 10px;
+      margin-right: 3px;
+      background-size: 10px 10px;
 
-      &.last-child {
+      &:last-child {
         margin-right: 0;
       }
 
       &.on {
-        bg-image('./img/star48_on');
-      }
-
-      &.off {
-        bg-image('./img/star48_off');
+        bg-image('images/star24_on');
       }
 
       &.half {
-        bg-image('./img/star48_half');
+        bg-image('images/star24_half');
+      }
+
+      &.off {
+        bg-image('images/star24_off');
       }
     }
   }

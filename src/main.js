@@ -1,33 +1,12 @@
-import Vue from 'vue';
-import App from './App';
-import VueRouter from 'vue-router';
-import VueResource from 'vue-resource';
+import Vue from "vue";
+import "./cube-ui";
+import './api/register' // 注册的createAPI 引入到全局
+import App from "./App.vue";
 
-Vue.use(VueRouter);
-Vue.use(VueResource);
-import goods from 'components/goods/goods';
-import seller from 'components/seller/seller';
-import ratings from 'components/ratings/ratings';
+/* 全局引用样式 */
+import 'common/stylus/index.styl'
+Vue.config.productionTip = false;
 
-// 公共样式
-import './common/stylus/index.styl';
-
-var app = Vue.extend(App);
-var router = new VueRouter({
-  linkActiveClass: 'active'
-});
-// router1.0 配置路由
-router.map({
-  '/goods': {
-    component: goods
-  },
-  '/ratings': {
-    component: ratings
-  },
-  '/seller': {
-    component: seller
-  }
-});
-// 挂载点
-router.start(app, '#app');
-router.go('/goods'); // 初始页面路由：goods
+new Vue({
+  render: h => h(App)
+}).$mount("#app");
